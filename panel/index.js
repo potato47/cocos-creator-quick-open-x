@@ -31,7 +31,7 @@ const createVue = function (elem) {
         },
         methods: {
             updateSearchData() {
-                this.$data.datas = getSearchItems(Editor.Project.path + '/assets');
+                this.$data.datas = getSearchItems(path.join(Editor.Project.path, '/assets'));
             },
             filterResults() {
                 this.results = this.datas.filter(item => {
@@ -88,7 +88,7 @@ const createVue = function (elem) {
                 event.stopPropagation();
                 event.preventDefault();
                 if (this.isOpen) {
-                    const filePath = Editor.Project.path + '/assets/' + this.results[this.arrowCounter].path;
+                    const filePath = path.join(Editor.Project.path, '/assets/', this.results[this.arrowCounter].path);
                     const uuid = Editor.remote.assetdb.fspathToUuid(filePath);
                     if (filePath.endsWith('.fire')) {
                         Editor.Panel.open('scene', {
@@ -217,7 +217,7 @@ function getSearchItems(searchPath) {
             const filePath = path.join(currentPath, fileName);
             const fileStat = fs.statSync(filePath);
             if (fileStat.isFile() && (fileName.endsWith('.fire') || fileName.endsWith('.prefab'))) {
-                items.push({ name: fileName, path: filePath.replace(new RegExp(searchPath + '/'), '') });
+                items.push({ name: fileName, path: filePath.substr(searchPath.length + 1) });
             } else if (fileStat.isDirectory()) {
                 walkDir(filePath);
             }
