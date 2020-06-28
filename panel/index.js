@@ -87,7 +87,7 @@ const createVue = function (elem) {
             onEnter(event) {
                 event.stopPropagation();
                 event.preventDefault();
-                if (this.isOpen) {
+                if (this.isOpen && this.results[this.arrowCounter]) {
                     const filePath = path.join(Editor.Project.path, '/assets/', this.results[this.arrowCounter].path);
                     const uuid = Editor.remote.assetdb.fspathToUuid(filePath);
                     if (filePath.endsWith('.fire')) {
