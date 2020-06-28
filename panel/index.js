@@ -100,6 +100,7 @@ const createVue = function (elem) {
                     this.search = '';
                     this.arrowCounter = 0;
                     this.isOpen = false;
+                    this.updateScroll();
                     Editor.Ipc.sendToPanel('quick-open-x', 'quick-open-x:search');
                 }
             },
@@ -118,6 +119,8 @@ const createVue = function (elem) {
                 this.isFullPath = !this.isFullPath;
                 if (this.search !== '') {
                     this.filterResults();
+                    this.arrowCounter = 0;
+                    this.updateScroll();
                 }
             },
             updateScroll() {
