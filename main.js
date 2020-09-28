@@ -14,12 +14,23 @@ module.exports = {
 
   // register your ipc messages here
   messages: {
-    'search'() {
-      // send ipc message to panel
+    'open'() {
+      if (!isOpen) {
+      }
+      Editor.Panel.open('quick-open-x');
+    },
+    'search-scene-prefab'() {
       if (!isOpen) {
         Editor.Panel.open('quick-open-x');
       } else {
-        Editor.Ipc.sendToPanel('quick-open-x', 'quick-open-x:search');
+        Editor.Ipc.sendToPanel('quick-open-x', 'quick-open-x:search', true);
+      }
+    },
+    'search-all'() {
+      if (!isOpen) {
+        Editor.Panel.open('quick-open-x');
+      } else {
+        Editor.Ipc.sendToPanel('quick-open-x', 'quick-open-x:search', false);
       }
     },
     'panel-ready'() {

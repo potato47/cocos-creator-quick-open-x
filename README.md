@@ -1,7 +1,7 @@
-# cocos-creator-quick-open-x
+# quick-open-x
 
 ## 用途
-- 快速搜索打开 scene/prefab 文件
+- 快速搜索打开文件
 - 比内置搜索更快！
 
 ## 安装
@@ -14,10 +14,14 @@
 - 再次ctrl+o（cmd+o)即可打开搜索框
     
 ## 快捷键
-- `CmdOrCtrl+O` 打开插件/搜索文件
+- `CmdOrCtrl+O` 搜索打开场景、预置体
+- `CmdOrCtrl+Shift+O` 搜索定位文件
 - `esc` 清空/退出输入框
 - `` ` `` 切换长短路径
+- 输入 `` @ `` 前缀启用远程搜索模式
 
 ## 预览
 
 ![preview](./preview.gif)
+
+![preview](./preview2.png)

@@ -1,13 +1,20 @@
 {
   "name": "quick-open-x",
-  "version": "1.0.0",
-  "description": "Quickly open scene or prefab.",
+  "version": "1.1.0",
+  "description": "Quickly open files.",
   "author": "Next",
   "main": "main.js",
   "main-menu": {
-    "i18n:MAIN_MENU.package.title/quick-open-x/search": {
-      "message": "quick-open-x:search",
+    "i18n:MAIN_MENU.package.title/quick-open-x/open": {
+      "message": "quick-open-x:open"
+    },
+    "i18n:MAIN_MENU.package.title/quick-open-x/search-scene-prefab": {
+      "message": "quick-open-x:search-scene-prefab",
       "accelerator": "CmdOrCtrl+O"
+    },
+    "i18n:MAIN_MENU.package.title/quick-open-x/search-all": {
+      "message": "quick-open-x:search-all",
+      "accelerator": "CmdOrCtrl+Shift+O"
     }
   },
   "panel": {

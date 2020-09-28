@@ -1,5 +1,8 @@
 const fs = require('fs');
 const path = require('path');
+const { shell } = require('electron');
+
+const MAX_RESULTS_COUNT = 100;
 
 const createVue = function (elem) {
     const vm = new Vue({
@@ -12,6 +15,8 @@ const createVue = function (elem) {
             arrowCounter: 0,
             selected: '',
             isFullPath: false,
+            isSimpleMode: false, // 简单模式只搜索 Scene 和 Prefab
+            isRemoteSearch: false,
         },
 
         created: function () {
@@ -31,20 +36,35 @@ const createVue = function (elem) {
         },
         methods: {
             updateSearchData() {
-                this.$data.datas = getSearchItems(path.join(Editor.Project.path, '/assets'));
+                this.datas = getSearchItems(path.join(Editor.Project.path, '/assets'));
             },
             filterResults() {
+                this.isRemoteSearch = this.search.startsWith('@');
+                if (this.isRemoteSearch) {
+                    let q = this.search.substring(1);
+                    this.results = getRemoteSearchResults(q);
+                    return;
+                }
+                let count = 0;
                 this.results = this.datas.filter(item => {
+                    if (count > MAX_RESULTS_COUNT) {
+                        return false;
+                    }
+                    if (this.isSimpleMode && !(item.name.endsWith('.fire') || item.name.endsWith('.prefab'))) {
+                        return false;
+                    }
                     const key = this.isFullPath ? 'path' : 'name';
                     const s1 = this.search.toLowerCase();
                     const s2 = item[key].toLowerCase();
                     const index = s2.indexOf(s1);
                     if (index > -1) {
                         item.sort = index;
+                        count++;
                         return true;
                     }
                     if (new RegExp(s1.split('').join('.*')).test(s2)) {
                         item.sort = 9999;
+                        count++;
                         return true;
                     }
                     return false;
@@ -88,14 +108,25 @@ const createVue = function (elem) {
                 event.stopPropagation();
                 event.preventDefault();
                 if (this.isOpen && this.results[this.arrowCounter]) {
-                    const filePath = path.join(Editor.Project.path, '/assets/', this.results[this.arrowCounter].path);
-                    const uuid = Editor.remote.assetdb.fspathToUuid(filePath);
-                    if (filePath.endsWith('.fire')) {
-                        Editor.Panel.open('scene', {
-                            uuid,
-                        });
-                    } else if (filePath.endsWith('.prefab')) {
-                        Editor.Ipc.sendToAll('scene:enter-prefab-edit-mode', uuid);
+                    if (this.isRemoteSearch) {
+                        const url = this.results[this.arrowCounter].url;
+                        // window.open(url); // 编辑器窗口打开
+                        shell.openExternal(url);
+                    } else {
+                        const filePath = path.join(Editor.Project.path, '/assets/', this.results[this.arrowCounter].path);
+                        const uuid = Editor.remote.assetdb.fspathToUuid(filePath);
+                        if (this.isSimpleMode) {
+                            if (filePath.endsWith('.fire')) {
+                                Editor.Panel.open('scene', {
+                                    uuid,
+                                });
+                            } else if (filePath.endsWith('.prefab')) {
+                                Editor.Ipc.sendToAll('scene:enter-prefab-edit-mode', uuid);
+                            }
+                        } else {
+                            Editor.Ipc.sendToAll('assets:hint', uuid);
+                            Editor.Selection.select('asset', uuid);
+                        }
                     }
                     this.search = '';
                     this.arrowCounter = 0;
@@ -183,31 +214,26 @@ Editor.Panel.extend({
     },
 
     messages: {
-        'quick-open-x:search'(event) {
+        'quick-open-x:search'(event, isSimpleMode) {
             if (this._markDiv.style.visibility === 'hidden') {
                 this._markDiv.style.visibility = 'visible';
                 this._vm.$els.search.focus();
                 this._vm.$data.search = '';
+                this._vm.$data.isSimpleMode = isSimpleMode;
             } else {
                 this._markDiv.style.visibility = 'hidden';
             }
         },
         'asset-db:assets-created'(event, list) {
-            if (list.findIndex(file => file.type === 'scene' || file.type === 'prefab') > -1) {
-                this._vm.updateSearchData();
-            }
+            this._vm.updateSearchData();
         },
         'asset-db:assets-moved'(event, list) {
-            if (list.findIndex(file => file.type === 'scene' || file.type === 'prefab') > -1) {
-                this._vm.updateSearchData();
-            }
+            this._vm.updateSearchData();
         },
         'asset-db:assets-deleted'(event, list) {
-            if (list.findIndex(file => file.type === 'scene' || file.type === 'prefab') > -1) {
-                this._vm.updateSearchData();
-            }
+            this._vm.updateSearchData();
         },
-     
+
     },
 
 });
@@ -219,7 +245,7 @@ function getSearchItems(searchPath) {
         files.forEach(fileName => {
             const filePath = path.join(currentPath, fileName);
             const fileStat = fs.statSync(filePath);
-            if (fileStat.isFile() && (fileName.endsWith('.fire') || fileName.endsWith('.prefab'))) {
+            if (fileStat.isFile() && !fileName.endsWith('.meta') && fs.existsSync(filePath + '.meta')) {
                 items.push({ name: fileName, path: filePath.substr(searchPath.length + 1) });
             } else if (fileStat.isDirectory()) {
                 walkDir(filePath);
@@ -228,4 +254,14 @@ function getSearchItems(searchPath) {
     };
     walkDir(searchPath);
     return items;
+}
+
+function getRemoteSearchResults(q) {
+    return [
+        { name: '搜论坛：' + q, path: '搜论坛：' + q, url: `https://forum.cocos.org/search?q=${q}%20category%3A27` },
+        { name: '搜文档：' + q, path: '搜文档：' + q, url: `https://docs.cocos.com/creator/manual/zh/?q=${q}`  },
+        { name: '搜API：' + q, path: '搜API：' + q, url: `https://docs.cocos.com/creator/api/zh/?q=${q}`  },
+        { name: '搜谷歌：' + q, path: '搜谷歌：' + q, url: `https://www.google.com/search?q=${q}`  },
+        { name: '搜百度：' + q, path: '搜百度：' + q, url: `https://www.baidu.com/s?wd=${q}`  },
+    ];
 }
