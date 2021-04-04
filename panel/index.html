@@ -1,21 +1,18 @@
-<ui-button id="btn">搜索</ui-button>
-<ui-markdown>
-    ## 用途
+<html>
 
-    - 快速搜索打开文件
-    
-    ## 使用
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <link rel="stylesheet" href="./index.css">
+    <script src="./vue.global.prod.js"></script>
+    <title>quick-open-x</title>
+</head>
 
-    - 打开插件面板，将面板放置到 Creator 任意位置
-    
-    - `CmdOrCtrl+O` 搜索打开场景、预置体
+<body>
+    <div id="app">
+        <autocomplete ref="search" @on-esc="onEsc" @on-enter="onEnter" :items="items" :commands="commands"></autocomplete>
+    </div>
+    <script src="index.js"></script>
+</body>
 
-    - `CmdOrCtrl+Shift+O` 搜索定位文件
-    
-    - `esc` 清空/退出输入框
-    
-    - `` ` `` 切换长短路径
-
-    - 输入 `` @ `` 前缀启用远程搜索模式
-
-</ui-markdown>
+</html>

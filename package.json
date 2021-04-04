@@ -1,27 +1,70 @@
 {
   "name": "quick-open-x",
-  "version": "1.1.0",
-  "description": "Quickly open files.",
+  "package_version": 2,
+  "version": "2.0.0",
+  "description": "快速搜索打开资源",
   "author": "Next",
-  "main": "main.js",
-  "main-menu": {
-    "i18n:MAIN_MENU.package.title/quick-open-x/open": {
-      "message": "quick-open-x:open"
-    },
-    "i18n:MAIN_MENU.package.title/quick-open-x/search-scene-prefab": {
-      "message": "quick-open-x:search-scene-prefab",
-      "accelerator": "CmdOrCtrl+O"
-    },
-    "i18n:MAIN_MENU.package.title/quick-open-x/search-all": {
-      "message": "quick-open-x:search-all",
-      "accelerator": "CmdOrCtrl+Shift+O"
-    }
+  "main": "browser.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/potato47/cocos-creator-quick-open-x.git"
   },
-  "panel": {
-    "main": "panel/index.js",
-    "type": "dockable",
-    "title": "quick-open-x",
-    "width": 800,
-    "height": 600
+  "contributions": {
+    "menu": [
+      {
+        "path": "万能搜索",
+        "label": "打开",
+        "message": "open"
+      },
+      {
+        "path": "万能搜索",
+        "label": "关闭",
+        "message": "close"
+      },
+      {
+        "path": "万能搜索",
+        "label": "源码",
+        "message": "source"
+      },
+      {
+        "path": "万能搜索",
+        "label": "帮助",
+        "message": "help"
+      }
+    ],
+    "messages": {
+      "open": {
+        "methods": [
+          "open"
+        ]
+      },
+      "close": {
+        "methods": [
+          "close"
+        ]
+      },
+      "source": {
+        "methods": [
+          "source"
+        ]
+      },
+      "help": {
+        "methods": [
+          "help"
+        ]
+      }
+    },
+    "shortcuts": [
+      {
+        "message": "open",
+        "win": "alt+s",
+        "mac": "option+s"
+      },
+      {
+        "message": "close",
+        "win": "alt+w",
+        "mac": "option+w"
+      }
+    ]
   }
 }
