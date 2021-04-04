@@ -6,7 +6,7 @@ const path = require("path");
 const exec = require("child_process").exec;
 
 const screenSize = screen.getPrimaryDisplay().workAreaSize;
-const searchWindowWidth = 900;
+const searchWindowWidth = 600;
 const searchWindowHeight = 400;
 const searchWindowX = Math.round(screenSize.width / 2 - searchWindowWidth / 2);
 const searchWindowY = 150;
@@ -15,14 +15,12 @@ const searchWindowPostition = {
   y: searchWindowY,
 };
 
-let itemsCache;
 let searchWindow;
 let webWindow;
 let lastWindow;
 let searchWindowVisible = false;
 
 function load() {
-  updateResItemsCache();
   initSearchWindow();
 }
 
@@ -43,7 +41,7 @@ function initSearchWindow() {
   ipcMain.on("search-cancel", (event, value) => {
     close();
   });
-  ipcMain.on("search-confirm", (event, item) => {
+  ipcMain.on("search-confirm", async (event, item) => {
     close();
     if (item.isCommand) {
       handleSearchCommand(item);
@@ -53,28 +51,21 @@ function initSearchWindow() {
   });
 }
 
-function handleSearchAssets(item) {
+async function handleSearchAssets(item) {
   const filePath = path.join(Editor.Project.path, "/assets/", item.path);
-  const uuid = Editor.assetdb.fspathToUuid(filePath);
-  if (filePath.endsWith(".fire") && !item.onlyLocate) {
-    Editor.Panel.open("scene", {
-      uuid,
-    });
-  } else if (filePath.endsWith(".prefab") && !item.onlyLocate) {
-    Editor.Ipc.sendToAll("scene:enter-prefab-edit-mode", uuid);
+  const uuid = await Editor.Message.request("asset-db", "query-uuid", filePath);
+  const url = await Editor.Message.request("asset-db", "query-url", uuid);
+  if (item.onlyLocate) {
+    Editor.Message.send("assets", "twinkle", uuid);
   } else {
-    Editor.Ipc.sendToAll("assets:hint", uuid);
-    Editor.Selection.select("asset", uuid);
+    Editor.Message.send("asset-db", "open-asset", url);
   }
 }
 
-function handleSearchCommand(command) {
+async function handleSearchCommand(command) {
   switch (command.type) {
     case "open-preview":
-      const port = 7456;
-      if (command.param) {
-        port = Number(command.param);
-      }
+      const port = await Editor.Message.request("server", "query-port");
       createWebWindow(`http://localhost:${port}/`);
       break;
     case "open-vscode":
@@ -100,7 +91,7 @@ function open() {
   if (!searchWindowVisible) {
     lastWindow = BrowserWindow.getFocusedWindow();
     showSearchWindow();
-    const files = getResItems();
+    const files = getResItems(path.join(Editor.Project.path, "/assets"));
     const commands = getCommandItems();
     searchWindow.webContents.send("active-search", files, commands);
   }
@@ -196,16 +187,7 @@ function createWindow(options, url) {
   return newWindow;
 }
 
-function getResItems() {
-  if (itemsCache) {
-    return itemsCache;
-  } else {
-    return [];
-  }
-}
-
-function updateResItemsCache() {
-  const searchPath = path.join(Editor.Project.path, "/assets");
+function getResItems(searchPath) {
   const items = [];
   const walkDir = (currentPath) => {
     const files = fs.readdirSync(currentPath);
@@ -227,13 +209,13 @@ function updateResItemsCache() {
     });
   };
   walkDir(searchPath);
-  itemsCache = items;
+  return items;
 }
 
 function getCommandItems() {
   return [
     {
-      name: "打开预览窗口: ",
+      name: "打开预览窗口",
       path: "open preview",
       type: "open-preview",
     },
@@ -278,37 +260,25 @@ function execCommond(command, cb) {
 }
 
 function source() {
-  shell.openExternal("https://github.com/potato47/cocos-creator-quick-open-x");
+  shell.openExternal('https://github.com/potato47/cocos-creator-quick-open-x');
 }
 
 function help() {
-  Editor.success("----------万能搜索（quick-open-x）----------");
-  Editor.success("alt(option) + s 打开搜索框");
-  Editor.success("alt(option) + w 关闭搜索框");
-  Editor.success("搜索框输入 > 进入命令模式");
-  Editor.success("搜索框输入资源名称后加 : 只定位不打开文件");
-  Editor.success("------------------------------------------");
+  console.log('----------万能搜索（quick-open-x）----------');
+  console.log('alt(option) + s 打开搜索框');
+  console.log('alt(option) + w 关闭搜索框');
+  console.log('搜索框输入 > 进入命令模式');
+  console.log('搜索框输入资源名称后加 : 只定位不打开文件');
+  console.log('------------------------------------------');
 }
 
 module.exports = {
   load,
   unload,
-  messages: {
+  methods: {
     open,
     close,
     source,
     help,
-    "asset-db:assets-created"(event, list) {
-      updateResItemsCache();
-    },
-    "asset-db:assets-moved"(event, list) {
-      updateResItemsCache();
-    },
-    "asset-db:assets-deleted"(event, list) {
-      updateResItemsCache();
-    },
-    "asset-db:asset-changed"(event, list) {
-      updateResItemsCache();
-    },
   },
 };

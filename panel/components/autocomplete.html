@@ -1,0 +1,12 @@
+<div class="autocomplete-container">
+  <input id="search" spellcheck="false" class="autocomplete-input" ref="search" type="text" :autofocus="true"
+    v-model="searchText" v-on:keydown.up="onArrowUp" v-on:keydown.down="onArrowDown" v-on:keydown.enter="onEnter"
+    v-on:keydown.esc="onEsc">
+  <ul v-show="isOpen" id="filesList" ref="fileslist" class="autocomplete-ul">
+    <li v-for="(result, i) in results" :key="i" @click="onClick(i);"
+      :class="{'autocomplete-li-focus': results[arrowCounter] && arrowCounter == i }"
+      class="autocomplete-li">
+      <span v-html="result.display"></span>
+    </li>
+  </ul>
+</div>

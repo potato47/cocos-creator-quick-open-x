@@ -5,23 +5,19 @@
   "author": "Next",
   "main": "main.js",
   "main-menu": {
-    "i18n:MAIN_MENU.package.title/quick-open-x/open": {
-      "message": "quick-open-x:open"
+    "quick-open-x/open": {
+      "message": "quick-open-x:open",
+      "accelerator": "Alt+S"
     },
-    "i18n:MAIN_MENU.package.title/quick-open-x/search-scene-prefab": {
-      "message": "quick-open-x:search-scene-prefab",
-      "accelerator": "CmdOrCtrl+O"
+    "quick-open-x/close": {
+      "message": "quick-open-x:close",
+      "accelerator": "Alt+W"
     },
-    "i18n:MAIN_MENU.package.title/quick-open-x/search-all": {
-      "message": "quick-open-x:search-all",
-      "accelerator": "CmdOrCtrl+Shift+O"
+    "quick-open-x/source": {
+      "message": "quick-open-x:source"
+    },
+    "quick-open-x/help": {
+      "message": "quick-open-x:help"
     }
-  },
-  "panel": {
-    "main": "panel/index.js",
-    "type": "dockable",
-    "title": "quick-open-x",
-    "width": 800,
-    "height": 600
   }
 }
